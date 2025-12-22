@@ -11,7 +11,7 @@ export default async function ProductsPage() {
   }
 
   const products = await res.json();
-console.log(products);
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-6">Products</h1>
