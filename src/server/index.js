@@ -13,6 +13,9 @@ mongoose
   .catch(console.error);
 
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 
 // 👇 RAW BODY FOR WEBHOOKS
 app.use(

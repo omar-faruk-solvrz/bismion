@@ -11,19 +11,20 @@ export default async function ProductsPage() {
   }
 
   const products = await res.json();
-
+  console.log(products);
   return (
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-6">Products</h1>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {products.map((p) => {
-          const image = p.images?.[0]?.src || "/placeholder.png";
+          const image = p.raw?.images?.[0]?.src;
+          console.log(image);
           const price =
             p.type === "grouped"
               ? "View options"
-              : p.price
-              ? `৳ ${p.price}`
+              : p.raw?.price
+              ? `৳ ${p.raw.price}`
               : "Out of stock";
 
           return (
@@ -31,11 +32,10 @@ export default async function ProductsPage() {
               key={p._id}
               className="border rounded-xl p-4 hover:shadow transition"
             >
-              <div className="relative w-full h-40 mb-3">
-                <Image
-                  src={image}
+              <div className="relative w-full h-52 mb-3">
+                <img
+                  src={image || "/placeholder.png"}
                   alt={p.name}
-                  fill
                   className="object-cover rounded"
                 />
               </div>
@@ -44,7 +44,7 @@ export default async function ProductsPage() {
               <p className="text-sm text-gray-600 mt-1">{price}</p>
 
               <Link
-                href={p.raw.permalink || "#"}
+                href={p.raw?.permalink || "#"}
                 target="_blank"
                 className="inline-block mt-3 text-sm text-blue-600 hover:underline"
               >

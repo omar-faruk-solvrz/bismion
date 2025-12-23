@@ -1,21 +1,47 @@
-import crypto from "node:crypto";
-import Store from "../models/Store.model.js";
+import { syncAllProducts, syncSingleProduct } from "../services/productSync.js";
+import querystring from "node:querystring";
 
 export const handleWooWebhook = async (req, res) => {
   try {
     console.log("📦 Product webhook received");
 
-    // Woo does NOT sign product webhooks reliably
-    // So we SKIP signature verification here
+    let payload = {};
 
-    const rawBody = Buffer.isBuffer(req.body) ? req.body.toString() : req.body;
+    // 🔑 Detect content type
+    const contentType = req.headers["content-type"] || "";
 
-    console.log("Payload:", rawBody);
+    if (Buffer.isBuffer(req.body)) {
+      const raw = req.body.toString();
 
-    // push to queue / sync product
+      if (contentType.includes("application/json")) {
+        payload = JSON.parse(raw);
+      } else if (contentType.includes("application/x-www-form-urlencoded")) {
+        payload = querystring.parse(raw);
+      }
+    } else {
+      payload = req.body;
+    }
+
+    console.log("Parsed payload:", payload);
+
+    if (!payload.id) {
+      console.log("No product ID found");
+      return;
+    }
+    // Woo sends product ID as `id`
+
+    setImmediate(async () => {
+      try {
+        await syncSingleProduct(payload.id);
+        console.log("✅ Product synced:", payload.id);
+      } catch (err) {
+        console.error("❌ Sync failed:", err.message);
+      }
+    });
+
     return res.status(200).send("OK");
   } catch (err) {
     console.error("Webhook error:", err);
-    return res.status(200).send("OK");
+    return res.status(200).send("OK"); // never fail Woo
   }
 };
