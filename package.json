@@ -2,12 +2,12 @@
   "name": "bismi",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "api": "node src/server/index.js"
+    "dev:next": "next dev",
+    "dev:api": "nodemon src/server/index.js",
+    "dev:worker": "nodemon src/server/workers/product.worker.js",
+    "dev": "concurrently -k -n NEXT,API,WORKER -c blue,green,yellow \"npm run dev:next\" \"npm run dev:api\" \"npm run dev:worker\""
   },
   "dependencies": {
     "@woocommerce/woocommerce-rest-api": "1.0.2",
@@ -23,8 +23,10 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.0",
+    "nodemon": "^3.1.11",
     "tailwindcss": "^4"
   }
 }

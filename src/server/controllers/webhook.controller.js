@@ -1,21 +1,31 @@
-import crypto from "node:crypto";
-import Store from "../models/Store.model.js";
+import { productQueue } from "../queues/product.queue.js";
 
 export const handleWooWebhook = async (req, res) => {
+  console.log(" Product webhook received");
+
+  // ✅ Respond immediately to WooCommerce
+  res.sendStatus(200);
+
+  const payload = req.body;
+  const productId = payload?.id;
+
+  if (!productId) {
+    console.log(" No product ID found");
+    return;
+  }
+
   try {
-    console.log("📦 Product webhook received");
+    await productQueue.add(
+      "sync-single-product",
+      { productId },
+      {
+        removeOnComplete: true,
+        removeOnFail: 50,
+      }
+    );
 
-    // Woo does NOT sign product webhooks reliably
-    // So we SKIP signature verification here
-
-    const rawBody = Buffer.isBuffer(req.body) ? req.body.toString() : req.body;
-
-    console.log("Payload:", rawBody);
-
-    // push to queue / sync product
-    return res.status(200).send("OK");
+    console.log("Job added to queue:", productId);
   } catch (err) {
-    console.error("Webhook error:", err);
-    return res.status(200).send("OK");
+    console.error("❌ Failed to add job:", err.message);
   }
 };

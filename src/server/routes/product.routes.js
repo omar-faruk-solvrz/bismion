@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Product from "../models/Product.model.js";
-import { syncProducts } from "../services/productSync.js";
+import { syncAllProducts } from "../services/productSync.js";
+import { syncStoreProducts } from "../controllers/product.controller.js";
 
 const router = Router();
 
@@ -31,7 +32,7 @@ router.post("/sync", async (req, res) => {
     let page = 1;
 
     while (true) {
-      const count = await syncProducts(page);
+      const count = await syncAllProducts(page);
       if (count < 50) break;
       page++;
     }
@@ -42,5 +43,7 @@ router.post("/sync", async (req, res) => {
     return res.status(500).json({ error: "Sync failed" });
   }
 });
+
+router.post("/sync-products", syncStoreProducts);
 
 export default router;
