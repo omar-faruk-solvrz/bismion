@@ -1,29 +1,31 @@
-import { syncSingleProduct } from "../services/productSync.js";
+import { productQueue } from "../queues/product.queue.js";
 
-export const handleWooWebhook = (req, res) => {
-  console.log("📦 Product webhook received");
+export const handleWooWebhook = async (req, res) => {
+  console.log(" Product webhook received");
 
-  // ✅ ALWAYS respond first
+  // ✅ Respond immediately to WooCommerce
   res.sendStatus(200);
 
   const payload = req.body;
-
-  console.log("Parsed payload:", payload);
-
   const productId = payload?.id;
 
   if (!productId) {
-    console.log("⚠️ No product ID found");
+    console.log(" No product ID found");
     return;
   }
 
-  // ✅ background task
-  setImmediate(async () => {
-    try {
-      await syncSingleProduct(productId);
-      console.log("✅ Product synced:", productId);
-    } catch (err) {
-      console.error("❌ Sync failed:", err.message);
-    }
-  });
+  try {
+    await productQueue.add(
+      "sync-single-product",
+      { productId },
+      {
+        removeOnComplete: true,
+        removeOnFail: 50,
+      }
+    );
+
+    console.log("Job added to queue:", productId);
+  } catch (err) {
+    console.error("❌ Failed to add job:", err.message);
+  }
 };

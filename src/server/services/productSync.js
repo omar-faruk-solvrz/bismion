@@ -7,7 +7,7 @@ import Product from "../models/Product.model.js";
 export async function syncSingleProduct(productId) {
   const { data: p } = await woo.get(`products/${productId}`);
 
-  console.log("Product synced:", p);
+  // console.log("Product synced:", p);
 
   await Product.updateOne(
     { wooId: p.id },
@@ -65,14 +65,11 @@ export async function syncSingleProduct(productId) {
 export async function syncAllProducts() {
   let page = 1;
 
-
-
   while (true) {
     const { data } = await woo.get("products", {
       per_page: 50,
       page,
     });
-
 
     if (!data.length) break;
 

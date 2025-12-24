@@ -6,16 +6,15 @@ import storeRoutes from "./routes/store.routes.js";
 import webhookRoutes from "./routes/webhook.routes.js";
 import productRoutes from "./routes/product.routes.js";
 
-const MONGO_URI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.gv1dy3j.mongodb.net/?appName=Cluster0`;
+// const MONGO_URI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.gv1dy3j.mongodb.net/?appName=Cluster0`;
 mongoose
-  .connect(MONGO_URI)
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch(console.error);
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 // 👇 RAW BODY FOR WEBHOOKS
 app.use(
@@ -33,7 +32,7 @@ app.use("/api/webhooks", webhookRoutes);
 app.use("/api/products", productRoutes);
 
 app.use((req, res, next) => {
-  console.log("➡️", req.method, req.url);
+  console.log( req.method, req.url);
   next();
 });
 
